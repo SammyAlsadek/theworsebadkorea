@@ -1,6 +1,6 @@
 import csv
 import hashlib
-from os import mkdir
+from os import mkdirs
 import re
 from time import sleep
 
@@ -15,7 +15,7 @@ report_file = open('report.csv', 'w', newline='')
 report_csv = csv.writer(report_file)
 report_csv.writerow(['URL', 'Filename', 'Outlinks'])
 
-mkdir('repository')
+mkdirs('repository', exist_ok=True)
 
 # -- initial setup --
 frontier = set([seed_url]) # going to
