@@ -1,10 +1,23 @@
+import csv
+import hashlib
+from os import mkdir
 import re
+from time import sleep
 
 from bs4 import BeautifulSoup
 import requests
 
+# TODO: Convert this to a CLI arg
 seed_url = 'https://www.telemundo.com/'
 
+# -- setup files/directories --
+report_file = open('report.csv', 'w', newline='')
+report_csv = csv.writer(report_file)
+report_csv.writerow(['URL', 'Filename', 'Outlinks'])
+
+mkdir('repository')
+
+# -- initial setup --
 frontier = set([seed_url]) # going to
 explored = set() # already did
 
@@ -13,10 +26,9 @@ domain = domain_re.match(seed_url).group(2)
 
 while len(frontier) > 0:
     url = frontier.pop()
-    print(url)
-
     r = requests.get(url)
-    print('Status: {0}'.format(r.status_code))
+
+    print('[{0}] {1}'.format(r.status_code, url))
 
     if r.ok:
         soup = BeautifulSoup(r.text, 'html.parser')
@@ -30,15 +42,19 @@ while len(frontier) > 0:
             elif match.group(2) == domain:
                 internal_links.append(link)
 
-        tokens = re.findall(r'\w+', soup.get_text())
-        tokens = [token.lower() for token in tokens]
-        print('Tokens: {0}'.format(len(tokens)))
-
         explored.add(url)
 
         outlinks_before = len(frontier)
         for link in internal_links:
             if link not in explored:
                 frontier.add(link)
-        outlinks_after = len(frontier)
-        print('Outlinks: {0}\n'.format(outlinks_after - outlinks_before))
+        outlinks = len(frontier) - outlinks_before
+
+        url_hash = hashlib.sha1(url.encode()).hexdigest()
+        filename = f'{url_hash}.html'
+        with open(f'repository/{filename}', 'w') as f:
+            f.write(r.text)
+
+        report_csv.writerow([url, filename, outlinks])
+
+report_file.close()
