@@ -15,7 +15,7 @@ report_file = open('report.csv', 'w', newline='')
 report_csv = csv.writer(report_file)
 report_csv.writerow(['URL', 'Filename', 'Outlinks'])
 
-mkdirs('repository', exist_ok=True)
+makedirs('repository', exist_ok=True)
 
 # -- initial setup --
 frontier = set([seed_url]) # going to
