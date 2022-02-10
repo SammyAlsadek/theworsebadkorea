@@ -46,7 +46,7 @@ while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
 
     if r.ok:
         soup = BeautifulSoup(r.text, 'html.parser')
-        all_links = [link.get('href') for link in soup.find_all('a') if link.get('href') is not None]
+        all_links = [link.get('href') for link in soup.find_all('a') if link.get('href')]
         internal_links = []
 
         for link in all_links:
