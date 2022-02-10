@@ -20,7 +20,7 @@ while len(frontier) > 0:
 
     if r.ok:
         soup = BeautifulSoup(r.text, 'html.parser')
-        all_links = [link.get('href') for link in soup.find_all('a')]
+        all_links = [link.get('href') for link in soup.find_all('a') if link.get('href') is not None]
         internal_links = []
 
         for link in all_links:
