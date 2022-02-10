@@ -13,9 +13,9 @@ domain = domain_re.match(url).group(2)
 
 while len(frontier) > 0:
     url = frontier.pop()
-    print('URL: {0}'.format(url))
 
     r = requests.get(url)
+    print('{0}, status: {1}'.format(url, r.status_code))
     if r.ok:
         soup = BeautifulSoup(r.text, 'html.parser')
         all_links = [link.get('href') for link in soup.find_all('a')]
