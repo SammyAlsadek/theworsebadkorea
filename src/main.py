@@ -3,13 +3,13 @@ import re
 from bs4 import BeautifulSoup
 import requests
 
-frontier = set(['https://www.telemundo.com/']) # going to
+seed_url = 'https://www.telemundo.com/'
+
+frontier = set([seed_url]) # going to
 explored = set() # already did
 
-url = 'https://www.telemundo.com/'
-
 domain_re = re.compile(r'(https?)?:\/\/(.*?)(/.*)')
-domain = domain_re.match(url).group(2)
+domain = domain_re.match(seed_url).group(2)
 
 while len(frontier) > 0:
     url = frontier.pop()
@@ -24,7 +24,7 @@ while len(frontier) > 0:
         for link in all_links:
             match = domain_re.match(link)
             if match is None:
-                internal_links.append('://{0}/{1}'.format(domain, link))
+                internal_links.append('http://{0}/{1}'.format(domain, link))
             elif match.group(2) == domain:
                 internal_links.append(link)
 
