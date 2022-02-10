@@ -32,10 +32,13 @@ while len(frontier) > 0:
 
         tokens = re.findall(r'\w+', soup.get_text())
         tokens = [token.lower() for token in tokens]
-        print('Tokens: {0}\n'.format(len(tokens)))
+        print('Tokens: {0}'.format(len(tokens)))
 
         explored.add(url)
 
+        outlinks_before = len(frontier)
         for link in internal_links:
             if link not in explored:
                 frontier.add(link)
+        outlinks_after = len(frontier)
+        print('Outlinks: {0}\n'.format(outlinks_after - outlinks_before))
