@@ -13,9 +13,11 @@ domain = domain_re.match(seed_url).group(2)
 
 while len(frontier) > 0:
     url = frontier.pop()
+    print(url)
 
     r = requests.get(url)
-    print('{0}, status: {1}'.format(url, r.status_code))
+    print('Status: {0}'.format(r.status_code))
+
     if r.ok:
         soup = BeautifulSoup(r.text, 'html.parser')
         all_links = [link.get('href') for link in soup.find_all('a')]
@@ -27,6 +29,10 @@ while len(frontier) > 0:
                 internal_links.append('http://{0}/{1}'.format(domain, link))
             elif match.group(2) == domain:
                 internal_links.append(link)
+
+        tokens = re.findall(r'\w+', soup.get_text())
+        tokens = [token.lower() for token in tokens]
+        print('Tokens: {0}\n'.format(len(tokens)))
 
         explored.add(url)
 
