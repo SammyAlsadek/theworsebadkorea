@@ -38,7 +38,10 @@ while len(frontier) > 0:
         for link in all_links:
             match = domain_re.match(link)
             if match is None:
-                internal_links.append('http://{0}/{1}'.format(domain, link))
+                if link[0] != '/':
+                    internal_links.append('http://{0}/{1}'.format(domain, link))
+                else:
+                    internal_links.append('http://{0}{1}'.format(domain, link))
             elif match.group(2) == domain:
                 internal_links.append(link)
 
