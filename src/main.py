@@ -1,6 +1,6 @@
 import csv
 import hashlib
-from os import mkdirs
+from os import makedirs
 import re
 from time import sleep
 
