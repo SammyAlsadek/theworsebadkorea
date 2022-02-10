@@ -1,3 +1,4 @@
+import argparse
 import csv
 import hashlib
 from os import makedirs
@@ -7,8 +8,14 @@ from time import sleep
 from bs4 import BeautifulSoup
 import requests
 
-# TODO: Convert this to a CLI arg
-seed_url = 'https://www.telemundo.com/'
+parser = argparse.ArgumentParser()
+parser.add_argument('seed_url')
+parser.add_argument('-p', '--pages', default=0, type=int)
+
+args = parser.parse_args()
+
+seed_url = args.seed_url
+page_limit = args.pages
 
 # -- setup files/directories --
 report_file = open('report.csv', 'w', newline='')
@@ -29,7 +36,9 @@ domain_match = domain_re.match(seed_url)
 protocol = domain_match.group(1)
 domain = domain_match.group(2)
 
-while len(frontier) > 0:
+pages = 0
+
+while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
     url = frontier.pop()
     r = requests.get(url)
 
@@ -69,5 +78,7 @@ while len(frontier) > 0:
             f.write(r.text)
 
         report_csv.writerow([url, filename, outlinks])
+
+        pages += 1
 
 report_file.close()
