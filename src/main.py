@@ -18,10 +18,12 @@ report_csv.writerow(['URL', 'Filename', 'Outlinks'])
 makedirs('repository', exist_ok=True)
 
 # -- initial setup --
+domain_re = re.compile(r'(https?)?:\/\/(.*?)(/.*)')
+javascript_re = re.compile(f'javascript:')
+
 frontier = set([seed_url]) # going to
 explored = set() # already did
 
-domain_re = re.compile(r'(https?)?:\/\/(.*?)(/.*)')
 domain_match = domain_re.match(seed_url)
 
 protocol = domain_match.group(1)
@@ -39,13 +41,18 @@ while len(frontier) > 0:
         internal_links = []
 
         for link in all_links:
-            match = domain_re.match(link)
-            if match is None:
+            domain_match = domain_re.match(link)
+
+            if domain_match is None:
+                if javascript_re.match(link) is not None:
+                    # Ignore 'javascript:' URLS
+                    continue
+
                 if link[0] != '/':
                     internal_links.append('{0}://{1}/{2}'.format(protocol, domain, link))
                 else:
                     internal_links.append('{0}://{1}{2}'.format(protocol, domain, link))
-            elif match.group(2) == domain:
+            elif domain_match.group(2) == domain:
                 internal_links.append(link)
 
         explored.add(url)
