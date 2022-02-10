@@ -39,16 +39,17 @@
     and do not count towards page limit
 
 # Submission Format
-  One .zip file: GroupX.zip
-    - Report.pdf
-    - Code (folder)
-    - Output (folder)
-    - Report1.csv
-    - Report2.csv
-    - Report3.csv
-    - Words1.csv
-    - Words.2.csv
-    - Words3.csv
+  One .zip file: 
+    • GroupX.zip
+    • Report.pdf
+    • Code (folder)
+    • Output (folder)
+    • Report1.csv
+    • Report2.csv
+    • Report3.csv
+    • Words1.csv
+    • Words.2.csv
+    • Words3.csv
     
 # Deadlines and submission
   •Pick group (9 groups of 4) and domains:
