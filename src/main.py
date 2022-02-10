@@ -22,7 +22,10 @@ frontier = set([seed_url]) # going to
 explored = set() # already did
 
 domain_re = re.compile(r'(https?)?:\/\/(.*?)(/.*)')
-domain = domain_re.match(seed_url).group(2)
+domain_match = domain_re.match(seed_url)
+
+protocol = domain_match.group(1)
+domain = domain_match.group(2)
 
 while len(frontier) > 0:
     url = frontier.pop()
@@ -39,9 +42,9 @@ while len(frontier) > 0:
             match = domain_re.match(link)
             if match is None:
                 if link[0] != '/':
-                    internal_links.append('http://{0}/{1}'.format(domain, link))
+                    internal_links.append('{0}://{1}/{2}'.format(protocol, domain, link))
                 else:
-                    internal_links.append('http://{0}{1}'.format(domain, link))
+                    internal_links.append('{0}://{1}{2}'.format(protocol, domain, link))
             elif match.group(2) == domain:
                 internal_links.append(link)
 
