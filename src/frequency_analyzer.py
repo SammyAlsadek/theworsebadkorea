@@ -20,10 +20,13 @@ freqs = {}
 for row in report_csv:
     page = open(f"repository/{row['Filename']}", 'r')
     page_words = re.findall(r'\w+', BeautifulSoup(page, 'html.parser').text.lower())
+    seen = []
     for word in page_words:
         if word not in freqs:
             freqs[word] = 0
-        freqs[word] += page_words.count(word)
+        if word not in seen:
+            freqs[word] += page_words.count(word)
+            seen.append(word)
 
 for entry in sorted(freqs.items(), key=lambda item: item[1], reverse=True)[:100]:
     words_csv.writerow(list(entry))
