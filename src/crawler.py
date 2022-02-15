@@ -2,6 +2,7 @@ import argparse
 import csv
 import hashlib
 from os import makedirs
+from os.path import exists
 import re
 from time import sleep
 from urllib.parse import urlparse
@@ -43,6 +44,14 @@ while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
     curr_dir = dir_re.match(urlparse(curr_url).path).group(1)
 
     r = requests.get(curr_url)
+    final_url = r.url
+
+    # Some servers redirect 404s back to a valid page instead of exposing a 404
+    # so we instead check to see if the final redirected URL is already visited
+    # to avoid recrawling a previously visited page
+    if final_url in explored:
+        print('[{0}, {1}]+ {2}'.format(r.status_code, r.headers['content-type'], curr_url))
+        continue
 
     if r.ok and r.headers['content-type'].startswith('text/html'):
         print('[{0}, {1}] {2}'.format(r.status_code, r.headers['content-type'], curr_url))
@@ -85,16 +94,23 @@ while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
 
         outlinks = len(frontier) - outlinks_before
 
-        url_hash = hashlib.sha1(curr_url.encode()).hexdigest()
+        # Avoid excess file I/O on crawled pages by hashing the final url instead
+        # of the requeted URL and checking if it was previously downloaded
+        url_hash = hashlib.sha1(final_url.encode()).hexdigest()
         filename = f'{url_hash}.html'
-        with open(f'repository/{filename}', 'w') as f:
-            f.write(r.text)
+
+        if not exists(filename):
+            with open(f'repository/{filename}', 'w') as f:
+                f.write(r.text)
 
         report_csv.writerow([curr_url, filename, outlinks])
-
         pages += 1
+
+        # Add both the path requested and the final path after redirects to
+        # explored set
         explored.add(curr_url)
+        explored.add(final_url)
     else:
-        print('*[{0}, {1}] {2}'.format(r.status_code, r.headers['content-type'], curr_url))
+        print('[{0}, {1}]* {2}'.format(r.status_code, r.headers['content-type'], curr_url))
 
 report_file.close()
