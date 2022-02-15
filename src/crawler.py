@@ -53,7 +53,7 @@ while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
         print('[{0}, {1}]+ {2}'.format(r.status_code, r.headers['content-type'], curr_url))
         continue
 
-    if r.ok and r.headers['content-type'].startswith('text/html'):
+    if r.ok and 'content-type' in r.headers and r.headers['content-type'].startswith('text/html'):
         print('[{0}, {1}] {2}'.format(r.status_code, r.headers['content-type'], curr_url))
 
         soup = BeautifulSoup(r.text, 'html.parser')
@@ -111,6 +111,7 @@ while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
         explored.add(curr_url)
         explored.add(final_url)
     else:
-        print('[{0}, {1}]* {2}'.format(r.status_code, r.headers['content-type'], curr_url))
+        content_type = r.headers['content-type'] if 'content-type' in r.headers else '?'
+        print('[{0}, {1}]* {2}'.format(r.status_code, content_type, curr_url))
 
 report_file.close()
