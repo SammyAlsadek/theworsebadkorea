@@ -79,10 +79,7 @@ while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
               r.headers['content-type'], curr_url))
 
         soup = BeautifulSoup(r.text, 'html.parser')
-
-        if not isDesiredLanguage(soup):
-            continue
-
+        desired = isDesiredLanguage(soup)
         all_links = [link.get('href')
                      for link in soup.find_all('a') if link.get('href')]
 
@@ -126,12 +123,14 @@ while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
         url_hash = hashlib.sha1(final_url.encode()).hexdigest()
         filename = f'{url_hash}.html'
 
-        if not exists(filename):
-            with open(f'repository/{filename}', 'w') as f:
-                f.write(r.text)
-
-        report_csv.writerow([curr_url, filename, outlinks])
-        pages += 1
+        if desired:
+            if not exists(filename):
+                with open(f'repository/{filename}', 'w') as f:
+                    f.write(r.text)
+            report_csv.writerow([curr_url, filename, outlinks])
+            pages += 1
+        else:
+            report_csv.writerow([curr_url, '', outlinks])
 
         # Add both the path requested and the final path after redirects to
         # explored set
