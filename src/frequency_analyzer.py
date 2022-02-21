@@ -18,6 +18,8 @@ words_csv.writerow(['Word', 'Frequency'])
 
 freqs = {}
 for row in report_csv:
+    if not row['Filename']:
+        continue
     page = open(f"repository/{row['Filename']}", 'r')
     page_words = re.findall(r'\w+', BeautifulSoup(page, 'html.parser').text.lower())
     seen = []
