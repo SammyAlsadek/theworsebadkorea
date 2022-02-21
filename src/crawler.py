@@ -7,17 +7,37 @@ import re
 from time import sleep
 from urllib.parse import urlparse
 
+from langdetect import detect
 from bs4 import BeautifulSoup
 import requests
+
+# -- language detection and verification --
+
+
+def detect_language(soup: BeautifulSoup) -> str:
+    return detect(soup.text)
+
+
+def verify_language(language: str) -> bool:
+    if language == desired_language:
+        return True
+    return False
+
+
+def isDesiredLanguage(soup: BeautifulSoup) -> bool:
+    return verify_language(detect_language(soup))
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('seed_url')
 parser.add_argument('-p', '--pages', default=0, type=int)
+parser.add_argument('-l', '--language', required=True, type=str)
 
 args = parser.parse_args()
 
 seed_url = args.seed_url
 page_limit = args.pages
+desired_language = args.language
 
 # -- setup files/directories --
 report_file = open('report.csv', 'w', newline='')
@@ -29,8 +49,8 @@ makedirs('repository', exist_ok=True)
 # -- initial setup --
 dir_re = re.compile(r'(\/.+\/|\/)')
 
-frontier = set([seed_url]) # going to
-explored = set() # already did
+frontier = set([seed_url])  # going to
+explored = set()  # already did
 
 seed_parse = urlparse(seed_url)
 
@@ -50,14 +70,18 @@ while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
     # so we instead check to see if the final redirected URL is already visited
     # to avoid recrawling a previously visited page
     if final_url in explored:
-        print('[{0}, {1}]+ {2}'.format(r.status_code, r.headers['content-type'], curr_url))
+        print('[{0}, {1}]+ {2}'.format(r.status_code,
+              r.headers['content-type'], curr_url))
         continue
 
     if r.ok and 'content-type' in r.headers and r.headers['content-type'].startswith('text/html'):
-        print('[{0}, {1}] {2}'.format(r.status_code, r.headers['content-type'], curr_url))
+        print('[{0}, {1}] {2}'.format(r.status_code,
+              r.headers['content-type'], curr_url))
 
         soup = BeautifulSoup(r.text, 'html.parser')
-        all_links = [link.get('href') for link in soup.find_all('a') if link.get('href')]
+        desired = isDesiredLanguage(soup)
+        all_links = [link.get('href')
+                     for link in soup.find_all('a') if link.get('href')]
 
         outlinks_before = len(frontier)
 
@@ -99,12 +123,14 @@ while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
         url_hash = hashlib.sha1(final_url.encode()).hexdigest()
         filename = f'{url_hash}.html'
 
-        if not exists(filename):
-            with open(f'repository/{filename}', 'w') as f:
-                f.write(r.text)
-
-        report_csv.writerow([curr_url, filename, outlinks])
-        pages += 1
+        if desired:
+            if not exists(filename):
+                with open(f'repository/{filename}', 'w') as f:
+                    f.write(r.text)
+            report_csv.writerow([curr_url, filename, outlinks])
+            pages += 1
+        else:
+            report_csv.writerow([curr_url, '', outlinks])
 
         # Add both the path requested and the final path after redirects to
         # explored set
