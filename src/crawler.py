@@ -72,16 +72,17 @@ if robots_response.ok:
 
 while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
     curr_url = frontier.pop()
-    curr_dir = dir_re.match(urlparse(curr_url).path).group(1)
+    curr_path = urlparse(curr_url).path
+    curr_dir = dir_re.match(curr_path).group(1)
 
     allowed = True
 
     for pattern in robots_entries['Disallowed']:
-        if pattern.match(curr_dir):
+        if pattern.match(curr_path):
             allowed = False
 
     for pattern in robots_entries['Allowed']:
-        if pattern.match(curr_dir):
+        if pattern.match(curr_path):
             allowed = True
 
     if not allowed:
