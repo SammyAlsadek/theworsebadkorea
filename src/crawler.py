@@ -144,12 +144,12 @@ while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
 
         outlinks = len(frontier) - outlinks_before
 
-        # Avoid excess file I/O on crawled pages by hashing the final url instead
-        # of the requeted URL and checking if it was previously downloaded
-        url_hash = hashlib.sha1(final_url.encode()).hexdigest()
-        filename = f'{url_hash}.html'
-
         if desired:
+            # Avoid excess file I/O on crawled pages by hashing the final url instead
+            # of the requeted URL and checking if it was previously downloaded
+            url_hash = hashlib.sha1(final_url.encode()).hexdigest()
+            filename = f'{url_hash}.html'
+
             if not exists(filename):
                 with open(f'repository/{filename}', 'w') as f:
                     f.write(r.text)
