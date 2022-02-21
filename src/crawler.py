@@ -32,7 +32,7 @@ def isDesiredLanguage(soup: BeautifulSoup) -> bool:
 parser = argparse.ArgumentParser()
 parser.add_argument('seed_url')
 parser.add_argument('-p', '--pages', default=0, type=int)
-parser.add_argument('-l', '--language', required=True, type=str)
+parser.add_argument('-l', '--language', default='en', type=str)
 
 args = parser.parse_args()
 
@@ -66,9 +66,9 @@ robots_response = requests.get(f'{seed_scheme}://{seed_domain}/robots.txt')
 if robots_response.ok:
     for line in robots_response.text.splitlines():
         if line.startswith('Allow'):
-            robots_entries['Allowed'].append(line.split(': ')[1].replace('*', ''))
+            robots_entries['Allowed'].append(re.compile(line.split(':')[1].strip()))
         elif line.startswith('Disallow'):
-            robots_entries['Disallowed'].append(line.split(': ')[1].replace('*', ''))
+            robots_entries['Disallowed'].append(re.compile(line.split(':')[1].strip()))
 
 while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
     curr_url = frontier.pop()
@@ -77,11 +77,11 @@ while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
     allowed = True
 
     for pattern in robots_entries['Disallowed']:
-        if curr_dir.startswith(pattern):
+        if pattern.match(curr_dir):
             allowed = False
 
     for pattern in robots_entries['Allowed']:
-        if curr_dir.startswith(pattern):
+        if pattern.match(curr_dir):
             allowed = True
 
     if not allowed:
