@@ -66,9 +66,9 @@ robots_response = requests.get(f'{seed_scheme}://{seed_domain}/robots.txt')
 if robots_response.ok:
     for line in robots_response.text.splitlines():
         if line.startswith('Allow'):
-            robots_entries['Allowed'].append(re.compile(line.split(':')[1].strip()))
+            robots_entries['Allowed'].append(re.compile(line.split(':')[1].strip().replace('*', '.*')))
         elif line.startswith('Disallow'):
-            robots_entries['Disallowed'].append(re.compile(line.split(':')[1].strip()))
+            robots_entries['Disallowed'].append(re.compile(line.split(':')[1].strip().replace('*', '.*')))
 
 while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
     curr_url = frontier.pop()
