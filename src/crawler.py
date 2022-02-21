@@ -5,6 +5,7 @@ from os import makedirs
 from os.path import exists
 import re
 from time import sleep
+from urllib import robotparser
 from urllib.parse import urlparse
 
 from langdetect import detect
@@ -59,9 +60,33 @@ seed_domain = seed_parse.netloc
 
 pages = 0
 
+# -- robots.txt magic
+robots_entries = {"Disallowed":[], "Allowed":[]}
+robots_response = requests.get(f'{seed_scheme}://{seed_domain}/robots.txt')
+if robots_response.ok:
+    for line in robots_response.text.splitlines():
+        if line.startswith('Allow'):
+            robots_entries['Allowed'].append(line.split(': ')[1].replace('*', ''))
+        elif line.startswith('Disallow'):
+            robots_entries['Disallowed'].append(line.split(': ')[1].replace('*', ''))
+
 while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
     curr_url = frontier.pop()
     curr_dir = dir_re.match(urlparse(curr_url).path).group(1)
+
+    allowed = True
+
+    for pattern in robots_entries['Disallowed']:
+        if curr_dir.startswith(pattern):
+            allowed = False
+
+    for pattern in robots_entries['Allowed']:
+        if curr_dir.startswith(pattern):
+            allowed = True
+
+    if not allowed:
+        print(f'Disallowed: {curr_dir}')
+        continue
 
     r = requests.get(curr_url)
     final_url = r.url
