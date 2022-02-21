@@ -155,6 +155,7 @@ while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
             report_csv.writerow([curr_url, filename, outlinks])
             pages += 1
         else:
+            print('- Skipped for lang verification')
             report_csv.writerow([curr_url, '', outlinks])
 
         # Add both the path requested and the final path after redirects to
