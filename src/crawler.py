@@ -69,16 +69,16 @@ if robots_response.ok:
         if not raw_rule or len(raw_rule) != 2:
             continue
 
-        key = raw_rule[0].strip()
+        key = raw_rule[0].strip().lower()
         value = raw_rule[1].strip()
         if not key or not value:
             continue
 
         rule_re = re.compile(value.replace('*', '.*'))
 
-        if key == 'Allow':
+        if key == 'allow':
             robots_entries['Allowed'].append(rule_re)
-        elif key == 'Disallow':
+        elif key == 'disallow':
             robots_entries['Disallowed'].append(rule_re)
 
 while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
