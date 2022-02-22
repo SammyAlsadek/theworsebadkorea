@@ -65,10 +65,21 @@ robots_entries = {"Disallowed":[], "Allowed":[]}
 robots_response = requests.get(f'{seed_scheme}://{seed_domain}/robots.txt')
 if robots_response.ok:
     for line in robots_response.text.splitlines():
-        if line.startswith('Allow'):
-            robots_entries['Allowed'].append(re.compile(line.split(':')[1].strip().replace('*', '.*')))
-        elif line.startswith('Disallow'):
-            robots_entries['Disallowed'].append(re.compile(line.split(':')[1].strip().replace('*', '.*')))
+        raw_rule = line.split(':', 1)
+        if not raw_rule or len(raw_rule) != 2:
+            continue
+
+        key = raw_rule[0].strip()
+        value = raw_rule[1].strip()
+        if not key or not value:
+            continue
+
+        rule_re = re.compile(value.replace('*', '.*'))
+
+        if key == 'Allow':
+            robots_entries['Allowed'].append(rule_re)
+        elif key == 'Disallow':
+            robots_entries['Disallowed'].append(rule_re)
 
 while len(frontier) > 0 and (page_limit == 0 or pages < page_limit):
     curr_url = frontier.pop()
