@@ -1,4 +1,4 @@
-# Assignment 1
+# Assignment 1a
 
 1. Create Web Crawler
    - Input: 1 or more seeds
@@ -69,3 +69,28 @@ One .zip file:
   
   Language detection
   https://languagelayer.com
+
+# Assignment 1b
+Text Processing
+- Perform word frequency analyses on the processed content for your 3 different crawls from part 1a 
+- For each analysis: 
+1. Zipf’s law
+   - Calculate word frequencies and ranks using all textual content, i.e. not HTML tags (feel free to use any tool/language)
+   - Plot word frequencies and word ranks (feel free to use any tool/language)
+   - Check if crawled content follows Zipf’s law (i.e. compare with typical Zipf’s distribution)
+2. Heap’s Law
+   - Plot vocabulary growth by collection growth, e.g. as examples in 
+class
+
+
+Indexing
+- Create a simple index as discussed in class
+- Minimum: Simple Inverted Index, e.g.
+
+Retrieval
+- Implement a simple search system
+- Minimum: Boolean Retrieval System (not including complex Boolean operators, e.g. OR, NOT)
+- No GUI required, e.g.
+   `Please enter your query: tropical fish`
+   `Relevant results are: doc12, doc24, doc45`
+
