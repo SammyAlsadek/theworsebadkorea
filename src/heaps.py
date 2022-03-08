@@ -1,8 +1,5 @@
-# cry inside
-# ahhhhhhhhh
-
 import csv
-import json
+from collections import OrderedDict
 from bs4 import BeautifulSoup
 import argparse
 import re
@@ -15,11 +12,11 @@ args = parser.parse_args()
 report_file = open(args.report_file, 'r', newline='')
 report_csv = csv.DictReader(report_file)
 
-zipf_file = open('words.csv', 'w', newline='')
-zipf_csv = csv.writer(zipf_file)
-zipf_csv.writerow(['Filename', 'Number of Unique Words'])
+heaps_file = open('heaps.csv', 'w', newline='')
+heaps_csv = csv.writer(heaps_file)
+heaps_csv.writerow(['Filename', 'Number of Unique Words'])
 
-file_to_unique_words = {}
+file_to_unique_words = OrderedDict()
 unique_list = []
 for row in report_csv:
     if not row['Filename']:
@@ -29,11 +26,12 @@ for row in report_csv:
     for word in page_words:
         if word not in unique_list:
             unique_list.append(word)
-            if str(row['Filename']) not in file_to_unique_words:
-                entry = str(row['Filename'])
+            if row['Filename'] not in file_to_unique_words:
+                entry = row['Filename']
                 file_to_unique_words[entry] = 0
             else:
-                file_to_unique_words[str(row['Filename'])] += 1
+                file_to_unique_words[row['Filename']] += 1
 
-
-zipf_file.close()
+for row in file_to_unique_words.items():
+    heaps_csv.writerow(row)
+heaps_file.close()
