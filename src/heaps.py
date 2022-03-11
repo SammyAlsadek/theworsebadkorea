@@ -1,8 +1,12 @@
 import csv
-from collections import OrderedDict
-from bs4 import BeautifulSoup
 import argparse
 import re
+
+import numpy as np
+
+from collections import OrderedDict
+from bs4 import BeautifulSoup
+from matplotlib import pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument('report_file')
@@ -35,3 +39,16 @@ for row in report_csv:
 for row in file_to_unique_words.items():
     heaps_csv.writerow(row)
 heaps_file.close()
+
+xplot = []
+yplot = []
+for i, row in enumerate(sorted(file_to_unique_words.items(), key=lambda item: item[1])):
+    xplot.append(row[1])
+    yplot.append(i)
+
+plt.title("Heap Plot")
+plt.xlabel("Collection Growth")
+plt.ylabel("Vocabulary Growth")
+plt.plot(xplot, yplot)
+plt.xticks(np.arange(min(xplot), max(xplot)+1, len(xplot)/7))
+plt.show()
