@@ -155,3 +155,4 @@ repository/
 *.csv
 *.json
 .vscode/
+.DS_Store
