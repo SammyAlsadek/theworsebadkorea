@@ -13,20 +13,19 @@ search_txt = args.search_txt
 index_file = open(index_filename, 'r')
 index = json.load(index_file)
 
-results = set()
+results = None
 search_terms = re.findall(r'\w+', search_txt.lower())
 for term in search_terms:
     if term not in index:
         results = set()
         break
 
-    if len(results) == 0:
-        results.update(index[term])
+    if results is None:
+        results = set(index[term])
         continue
 
     for result in set(results):
         if result not in index[term]:
             results.remove(result)
-            continue
 
 print(results)

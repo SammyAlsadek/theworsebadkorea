@@ -1,7 +1,11 @@
 import csv
-from bs4 import BeautifulSoup
 import argparse
 import re
+
+import numpy as np
+
+from bs4 import BeautifulSoup
+from matplotlib import pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument('report_file')
@@ -29,7 +33,17 @@ for row in report_csv:
             freqs[word] += page_words.count(word)
             seen.append(word)
 
-for entry in sorted(freqs.items(), key=lambda item: item[1], reverse=True):
+xplot = []
+yplot = []
+for i, entry in enumerate(sorted(freqs.items(), key=lambda item: item[1], reverse=True)):
+    xplot.append(i)
+    yplot.append(entry[1])
     zipf_csv.writerow(list(entry))
-
 zipf_file.close()
+
+plt.title("Zipf Plot")
+plt.xlabel("Rank")
+plt.ylabel("Frequency")
+plt.plot(xplot, yplot)
+plt.xticks(np.arange(min(xplot), max(xplot)+1, len(xplot)/7))
+plt.show()
