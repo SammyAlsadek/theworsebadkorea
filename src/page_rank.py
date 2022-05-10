@@ -4,7 +4,6 @@ import argparse
 from urllib.parse import urlparse
 import re
 import numpy as np
-import pickle
 
 dir_re = re.compile(r'(\/.+\/|\/)')
 
@@ -12,6 +11,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('report_file')
 
 args = parser.parse_args()
+
+MAX_PAGERANK_ITERS = 100
+EPSILON = 10e-10
 
 pagerank_file = open('pagerank.csv', 'w', newline='')
 pagerank_csv = csv.writer(pagerank_file)
@@ -23,17 +25,24 @@ report = list(report_csv)
 report_file.close()
 
 links = [item['URL'] for item in report]
-in_links = {} # dict where key=page, value=number of pages that link to it
 out_links = {}
 N = 0
 
 report_domain = None
 report_scheme = None
 
+print('Scraping outlinks: 0.00%')
+
 for row in report:
     if not row['Filename']:
         continue
 
+    N += 1
+
+    if N % 100 == 0:
+        percent = N / len(report) * 100
+        print(f'Scraping outlinks: %.2f%%' % percent)
+    
     if not report_domain:
         report_parse = urlparse(row['URL'])
         report_domain = report_parse.netloc
@@ -69,31 +78,17 @@ for row in report:
             path = f'{curr_dir}{path}'
             link_url = f'{scheme}://{domain}{path}'
 
-        # if next((l for l in report if l['URL'] == link_url), None) != None:
-        #     continue
-
-        if not any([True for line in report if link == line['URL']]):
+        if not next((l for l in report if l['URL'] == link_url), False):
             continue
 
         if row['URL'] in out_links:
             out_links[row['URL']].append(link_url)
         else:
             out_links[row['URL']] = [link_url]
-        
-        if link_url in in_links:
-            in_links[link_url] += 1
-        else:
-            in_links[link_url] = 1
 
-# test_pickle = open('test.pickle', 'wb')
-# pickle.dump({'links': links,'out_links': out_links,'in_links': in_links}, test_pickle)
+    page.close()
 
-# test_pickle = open('test.pickle', 'rb')
-# tpo = pickle.load(test_pickle)
-
-# links = tpo['links']
-# in_links = tpo['in_links']
-# out_links = tpo['out_links']
+print(f'Building Google matrix ({len(links)}x{len(links)})')
 
 # build the google matrix
 M = np.zeros([len(links), len(links)])
@@ -105,8 +100,7 @@ for page in out_links.keys():
         # `page` contributes one more to `link`'s ranking in the 'google' matrix
         M[links.index(link)][links.index(page)] += 1 
 
-
-# divide each column by the sum of outlinks from a certain page
+# divide each column by the sum of column
 for i in range(len(links)):
     if M[:,i].sum() != 0:
         M[:,i] /= M[:,i].sum()
@@ -115,18 +109,22 @@ for i in range(len(links)):
 V = np.empty([len(links), 1])
 V.fill(1./len(links))
 
+print('Performing PageRank')
+
 # run pagerank for some number of iterations
 iters = 0
-while iters < 10:
+while iters < MAX_PAGERANK_ITERS:
     iters += 1
-    V = np.matmul(M, V)
+    W = np.matmul(M, V)
+    # if the difference in vectors is negligible, terminate 
+    if np.linalg.norm(W - V) < EPSILON:
+        V = W
+        break
+    V = W
 
-# get the indices for the 100 top pages
-# ind = (-V).argsort()[:100]
-ind = np.argpartition(V, -100, axis=0)[-100:]
-# ind = idx[np.argsort((-V)[idx])]
+print(f'V sum: {np.sum(V)}')
 
-# print the result
-for i in ind:
-    print(V[i[0]][0])
-    print(links[i[0]])
+for i in range(len(links)):
+    pagerank_csv.writerow([links[i], V[i][0]])
+
+pagerank_file.close()
